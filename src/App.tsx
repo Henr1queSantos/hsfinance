@@ -75,11 +75,21 @@ function App() {
           </div>
 
           {showForm ? <ExpenseForm onComplete={() => setShowForm(false)} /> : (
-            <>
-              <ExpenseList expenses={expenses} />
-              <button onClick={() => setShowForm(true)} className="fixed bottom-6 right-6 bg-emerald-600 w-12 h-12 rounded-full text-2xl shadow-lg">+</button>
-            </>
-          )}
+  <>
+    <div className="pb-24">
+      <ExpenseList expenses={expenses} />
+    </div>
+
+    <div className="fixed bottom-6 left-0 right-0 flex justify-center z-50">
+      <button 
+        onClick={() => setShowForm(true)} 
+        className="bg-emerald-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl font-bold"
+      >
+        +
+      </button>
+    </div>
+  </>
+)}
         </>
       )}
     </div>

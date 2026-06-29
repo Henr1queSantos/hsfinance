@@ -51,7 +51,7 @@ const handleTogglePaid = async (exp: any) => {
   };
 
   return (
-    <div className="space-y-2 mt-4">
+    <div className="space-y-2 mt-4 pb-24">
       {expenses.sort((a, b) => a.dueDate.toDate() - b.dueDate.toDate()).map(exp => {
         const isOverdue = !exp.isPaid && exp.dueDate.toDate() < new Date(new Date().setHours(0,0,0,0));
         
