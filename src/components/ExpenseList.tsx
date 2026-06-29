@@ -22,11 +22,16 @@ const handleTogglePaid = async (exp: any) => {
 };
 
   const handleDateEdit = async (exp: any) => {
-    const newDate = prompt("Enter new date (YYYY-MM-DD):", exp.dueDate.toDate().toISOString().split('T')[0]);
-    if (newDate) {
-      await updateDoc(doc(db, 'expenses', exp.id), { dueDate: Timestamp.fromDate(new Date(newDate)) });
-    }
-  };
+  const currentDate = exp.dueDate.toDate().toISOString().split('T')[0];
+  
+  const newDate = prompt("Digite a nova data (AAAA-MM-DD):", currentDate);
+  
+  if (newDate) {
+    await updateDoc(doc(db, 'expenses', exp.id), { 
+      dueDate: Timestamp.fromDate(new Date(newDate)) 
+    });
+  }
+};
 
   const handleDelete = async (exp: any) => {
     const option = exp.groupId ? prompt("Delete: Type '1' for only this month, or '2' for this and all future months.") : "1";
@@ -59,7 +64,7 @@ const handleTogglePaid = async (exp: any) => {
             }}>
               <p className="font-bold">{exp.description} ✏️</p>
               <p className="text-[10px] opacity-70 cursor-pointer underline" onClick={(e) => { e.stopPropagation(); handleDateEdit(exp); }}>
-                {exp.dueDate.toDate().toLocaleDateString()} 📅
+                {exp.dueDate.toDate().toLocaleDateString('pt-BR')} 📅
               </p>
             </div>
             
