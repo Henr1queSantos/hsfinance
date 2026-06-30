@@ -32,6 +32,7 @@ function App() {
 
   const totalPlanned = expenses.reduce((a, e) => a + (e.plannedAmount || 0), 0);
   const totalSpent = expenses.reduce((a, e) => (e.isPaid ? a + (e.spentAmount || 0) : a), 0);
+  const stillToPay = expenses.reduce((a, e) => (!e.isPaid ? a + (e.plannedAmount || 0) : a), 0);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4 max-w-lg mx-auto">
@@ -62,6 +63,9 @@ function App() {
             </div>
             <div className="flex justify-between text-blue-400">
               <span>Total Spent:</span> <span>€{totalSpent.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-blue-400">
+              <span>Still To Pay:</span> <span>€{stillToPay.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-emerald-400 font-bold border-t border-gray-700 pt-2">
               <span>Budget Remaining:</span> <span>€{(income - totalSpent).toFixed(2)}</span>
