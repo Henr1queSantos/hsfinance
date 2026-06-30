@@ -33,13 +33,14 @@ function App() {
   const totalPlanned = expenses.reduce((a, e) => a + (e.plannedAmount || 0), 0);
   const totalSpent = expenses.reduce((a, e) => (e.isPaid ? a + (e.spentAmount || 0) : a), 0);
   const stillToPay = expenses.reduce((a, e) => {
-  if (e.isPaid) return a; 
+  if (e.isPaid) return a;
+
   if (e.isVariable) {
-    const valorParaContar = (e.spentAmount && e.spentAmount > 0) ? e.spentAmount : e.plannedAmount;
-    return a + valorParaContar;
+    const faltaGastar = (e.plannedAmount || 0) - (e.spentAmount || 0);
+    return a + Math.max(0, faltaGastar);
   }
   return a + (e.plannedAmount || 0);
-}, 0);
+  }, 0);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4 max-w-lg mx-auto">
