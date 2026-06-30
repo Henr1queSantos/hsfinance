@@ -4,20 +4,31 @@ import { LoginForm } from './components/LoginForm';
 import { HouseSetup } from './components/HouseSetup';
 import { ExpenseForm } from './components/ExpenseForm';
 import { ExpenseList } from './components/ExpenseList';
-import { doc, getDoc, setDoc, collection, query, where, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, where, onSnapshot, addDoc, updateDoc, getDocs } from 'firebase/firestore';
 import { db } from './services/firebase';
 
 function App() {
   const { user, houseId } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [viewDate, setViewDate] = useState(new Date());
-  const [income, setIncome] = useState(0);
+  const [income, setIncome] = useState(3000); // Padrão
   const [expenses, setExpenses] = useState<any[]>([]);
+
+  const currentMonthKey = `${viewDate.getMonth()}-${viewDate.getFullYear()}`;
 
   useEffect(() => {
     if (!houseId) return;
-    
-    getDoc(doc(db, 'houses', houseId)).then(d => d.exists() && setIncome(d.data().income || 0));
+
+    const fetchIncome = async () => {
+      const q = query(collection(db, 'incomes'), where('houseId', '==', houseId), where('month', '==', currentMonthKey));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        setIncome(snap.docs[0].data().amount);
+      } else {
+        setIncome(3000); 
+      }
+    };
+    fetchIncome();
 
     const q = query(collection(db, 'expenses'), where('houseId', '==', houseId));
     return onSnapshot(q, (snapshot) => {
@@ -28,17 +39,29 @@ function App() {
       });
       setExpenses(filtered);
     });
-  }, [houseId, viewDate]);
+  }, [houseId, viewDate, currentMonthKey]);
+
+  const handleUpdateIncome = async (newVal: number) => {
+    setIncome(newVal);
+    const q = query(collection(db, 'incomes'), where('houseId', '==', houseId), where('month', '==', currentMonthKey));
+    const snap = await getDocs(q);
+
+    if (!snap.empty) {
+      await updateDoc(doc(db, 'incomes', snap.docs[0].id), { amount: newVal });
+    } else {
+      await addDoc(collection(db, 'incomes'), { houseId, month: currentMonthKey, amount: newVal });
+    }
+  };
 
   const totalPlanned = expenses.reduce((a, e) => a + (e.plannedAmount || 0), 0);
   const totalSpent = expenses.reduce((a, e) => (e.isPaid ? a + (e.spentAmount || 0) : a), 0);
-const stillToPay = expenses.reduce((a, e) => {
-  if (e.isVariable) {
-    const falta = Math.max(0, e.plannedAmount - (e.spentAmount || 0));
-    return a + falta;
-  }
-  return a + (e.isPaid ? 0 : (e.plannedAmount || 0));
-}, 0);
+  const stillToPay = expenses.reduce((a, e) => {
+    if (e.isVariable) {
+      const falta = Math.max(0, e.plannedAmount - (e.spentAmount || 0));
+      return a + falta;
+    }
+    return a + (e.isPaid ? 0 : (e.plannedAmount || 0));
+  }, 0);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4 max-w-lg mx-auto">
@@ -57,11 +80,7 @@ const stillToPay = expenses.reduce((a, e) => {
             <div className="flex justify-between items-center">
               <span>Total Income:</span>
               <input type="number" className="bg-gray-700 w-20 text-right px-1 rounded" value={income} 
-                onChange={(e) => { 
-                  const val = parseFloat(e.target.value);
-                  setIncome(val); 
-                  setDoc(doc(db, 'houses', houseId), { income: val }, { merge: true }); 
-                }} 
+                onChange={(e) => handleUpdateIncome(parseFloat(e.target.value))} 
               />
             </div>
             <div className="flex justify-between border-t border-gray-700 pt-2">
@@ -85,21 +104,17 @@ const stillToPay = expenses.reduce((a, e) => {
           </div>
 
           {showForm ? <ExpenseForm onComplete={() => setShowForm(false)} /> : (
-  <>
-    <div className="pb-24">
-      <ExpenseList expenses={expenses} />
-    </div>
-
-    <div className="fixed bottom-6 left-0 right-0 flex justify-center z-50">
-      <button 
-        onClick={() => setShowForm(true)} 
-        className="bg-emerald-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl font-bold"
-      >
-        +
-      </button>
-    </div>
-  </>
-)}
+            <>
+              <div className="pb-24">
+                <ExpenseList expenses={expenses} />
+              </div>
+              <div className="fixed bottom-6 left-0 right-0 flex justify-center z-50">
+                <button onClick={() => setShowForm(true)} className="bg-emerald-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl font-bold">
+                  +
+                </button>
+              </div>
+            </>
+          )}
         </>
       )}
     </div>
