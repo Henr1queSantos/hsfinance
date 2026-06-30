@@ -4,7 +4,7 @@ import { LoginForm } from './components/LoginForm';
 import { HouseSetup } from './components/HouseSetup';
 import { ExpenseForm } from './components/ExpenseForm';
 import { ExpenseList } from './components/ExpenseList';
-import { doc, getDoc, setDoc, collection, query, where, onSnapshot, addDoc, updateDoc, getDocs } from 'firebase/firestore';
+import { doc, collection, query, where, onSnapshot, addDoc, updateDoc, getDocs } from 'firebase/firestore';
 import { db } from './services/firebase';
 
 function App() {
